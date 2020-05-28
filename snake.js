@@ -3,15 +3,13 @@ class Snake{
   constructor(x, y, size){
     this.x = x;
     this.y = y;
-    this.tail = [];
+    this.tail = [{x:this.x, y:this.y}];
     this.size = size;
     this.rotateX = 0;
     this.rotateY = 1;
   }
 
   init(){
-    var coordinates = {x:this.x,y:this.y};
-    this.tail.push(coordinates);
   }
 
   move(){
@@ -46,8 +44,20 @@ class Snake{
 
 class Apple {
   constructor(){
-    this.x = Math.floor(Math.random() * canvas.width / snake.size) * snake.size;
-    this.y = Math.floor(Math.random() * canvas.height / snake.size) * snake.size;
+    var isTouching;
+    while(true){
+      isTouching = false;
+      this.x = Math.floor(Math.random() * canvas.width / snake.size) * snake.size;
+      this.y = Math.floor(Math.random() * canvas.height / snake.size) * snake.size;
+      for(var i = 0; i < snake.tail.length; i++) {
+        if((this.x == snake.tail[i].x && this.y == snake.tail[i].y)){
+          isTouching = true;
+        }
+      }
+      if(!isTouching){
+        break;
+      }
+    }
     this.color = 'pink';
     this.size = snake.size;
   }
@@ -64,21 +74,25 @@ var canvasContext = canvas.getContext('2d');
 window.onload = function (){
   gameLoop();
 }
+
 function gameLoop() {
   setInterval(show, 1000/15);
 }
 
 function show(){
-
   update();
   draw();
 }
 
 function update(){
+
+  checkHit();
   keyCheck();
   canvasContext.clearRect(0, 0, canvas.width, canvas.heigth);
-  snake.move();
   eatApple();
+  snake.move();
+  checkHitWall();
+
 }
 
 function draw(){
@@ -132,7 +146,37 @@ function keyCheck() {
 function eatApple() {
   if(snake.tail[snake.tail.length - 1].x == apple.x && snake.tail[snake.tail.length-1].y == apple.y) {
     snake.tail[snake.tail.length] = {x: apple.x, y: apple.y};
-    console.log("yedi");
     apple = new Apple();
+  }
+}
+
+function checkHit(){
+  var isHit;
+  for(var i = 0; i < snake.tail.length - 1; i++) {
+    isHit = false;
+    if(snake.tail[snake.tail.length -1].x == snake.tail[i].x && snake.tail[snake.tail.length-1].y == snake.tail[i].y){
+
+       isHit = true;
+    }
+    if(isHit){
+      console.log('yeap');
+      snake = new Snake(20, 20, 20);
+    }
+  }
+}
+
+function checkHitWall(){
+  var headTail = snake.tail[snake.tail.length-1];
+  if(headTail.x == -snake.size){
+    headTail.x = canvas.width - snake.size;
+  }
+  if(headTail.x == canvas.width) {
+    headTail.x = 0;
+  }
+  if(headTail.y == -snake.size) {
+    headTail.y = canvas.height - snake.size;
+  }
+  if(headTail.y == canvas.height){
+    headTail.y = 0;
   }
 }
